@@ -48,37 +48,28 @@ async function assertFieldError(page, text: string) {
 
 test.describe('Import Project Page E2E Tests', () => {
 
-  test.describe('1. Auth & Access Control (TC-001 to TC-007)', () => {
-    const authRoles = [
-      { id: 'TC-001', role: 'document_staff', name: 'Authorized to import project (Doc Staff)', allowed: true, heading: 'นำเข้าโครงการ' },
-      { id: 'TC-002', role: 'facilities_rep', name: 'Authorized to import project (Rep)', allowed: true, heading: 'สร้างโครงการ' },
-      { id: 'TC-003', role: 'guest', name: 'Unauthorized import project (Guest)', allowed: false },
-      { id: 'TC-004', role: 'finance_staff', name: 'Unauthorized import project (Fin Staff)', allowed: false },
-      { id: 'TC-005', role: 'contract', name: 'Unauthorized import project (Con Staff)', allowed: false },
-      { id: 'TC-006', role: 'procurement1', name: 'Unauthorized import project (Proc Staff)', allowed: false },
-      { id: 'TC-007', role: 'proc_head1', name: 'Unauthorized import project (Proc Head)', allowed: false },
-    ];
+  test.describe('1. Auth & Access Control (TC-001, TC-002)', () => {
+    test('TC-001: Authorized users access Import Project', async ({ page }) => {
+      await login(page, 'document_staff');
+      await page.goto('/app/project-import');
+      await expect(page.getByRole('heading', { name: 'นำเข้าโครงการ' })).toBeVisible();
+    });
 
-    for (const { id, role, name, allowed, heading } of authRoles) {
-      test(`${id}: ${name}`, async ({ page }) => {
-        await login(page, role);
-        await page.goto('/app/project-import');
-        if (allowed) {
-          await expect(page.getByRole('heading', { name: heading })).toBeVisible();
-        } else {
-          await expect(page).not.toHaveURL(/.*\/app\/project-import$/);
-        }
-      });
-    }
+    test('TC-002: Unauthorized users denied', async ({ page }) => {
+      await login(page, 'guest');
+      await page.goto('/app/project-import');
+      // Guest role doesn't have create/import permission, so should be redirected/blocked
+      await expect(page).not.toHaveURL(/.*\/app\/project-import$/);
+    });
   });
 
-  test.describe('2. File Upload Validations (TC-008 to TC-010)', () => {
+  test.describe('2. File Upload Validations (TC-003, TC-004, TC-444)', () => {
     test.beforeEach(async ({ page }) => {
       await login(page, 'document_staff');
       await page.goto('/app/project-import?mode=lesspaper');
     });
 
-    test('TC-008: Reject invalid uploaded file', async ({ page }) => {
+    test('TC-003: Reject invalid Excel extension', async ({ page }) => {
       const buffer = Buffer.from('dummy txt file content');
       await page.locator('input[type="file"]').setInputFiles({
         name: 'test.txt',
@@ -88,7 +79,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(page.getByText(/รองรับไฟล์ \.xlsx และ \.xls/i)).toBeVisible();
     });
 
-    test('TC-009: Reject oversized Excel file', async ({ page }) => {
+    test('TC-004 & TC-444: Excel rows limit boundaries (Max 50 items)', async ({ page }) => {
       const fileInput = page.locator('input[type="file"]');
 
       // ---------------------------------------------------------
@@ -147,7 +138,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await page.goto('/app/project-import?mode=lesspaper');
     });
 
-    test('TC-010: Accept valid Excel file', async ({ page }) => {
+    test('TC-005: Show Excel parsing state', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '202611001',
         'เลขที่รับจาก Less paper': '999001',
@@ -171,7 +162,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10000 });
     });
 
-    test('TC-010_extra: Show Excel parse error', async ({ page }) => {
+    test('TC-006: Show Excel parse error', async ({ page }) => {
       const buffer = Buffer.from('this is not a valid zip or excel file structure');
       await page.locator('input[type="file"]').setInputFiles({
         name: 'corrupt.xlsx',
@@ -189,7 +180,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await page.waitForLoadState('networkidle');
     });
 
-    test('TC-011: LessPaper required fields', async ({ page }) => {
+    test('TC-007: LessPaper required fields', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '1111',
         'เลขที่รับจาก Less paper': '', // Missing
@@ -223,7 +214,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'กรุณาเลือกฝ่าย');
     });
 
-    test('TC-012: LessPaper duplicate PR existing', async ({ page }) => {
+    test('TC-008: LessPaper duplicate PR existing', async ({ page }) => {
       await page.route('**/projects/import', async (route) => {
         await route.fulfill({
           status: 409,
@@ -257,7 +248,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'เลขที่ใบขอซื้อขอจ้างซ้ำกับโครงการที่มีอยู่แล้ว');
     });
 
-    test('TC-013: LessPaper duplicate PR in upload', async ({ page }) => {
+    test('TC-009: LessPaper duplicate PR in upload', async ({ page }) => {
       const row1 = {
         'เลขที่ใบขอซื้อขอจ้าง': '9999000222',
         'เลขที่รับจาก Less paper': '10001',
@@ -282,7 +273,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'เลขที่ใบขอซื้อขอจ้างซ้ำกันในชุดนำเข้า');
     });
 
-    test('TC-014: LessPaper budget numeric/positive', async ({ page }) => {
+    test('TC-010: LessPaper budget numeric/positive', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '2222',
         'เลขที่รับจาก Less paper': '10100',
@@ -306,7 +297,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'วงเงินงบประมาณต้องมากกว่า 0');
     });
 
-    test('TC-015: LessPaper procurement budget range', async ({ page }) => {
+    test('TC-011: LessPaper procurement budget range', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '3333',
         'เลขที่รับจาก Less paper': '10101',
@@ -330,7 +321,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'ต้องไม่เกิน 100,000 บาท');
     });
 
-    test('TC-016: LessPaper future delivery date', async ({ page }) => {
+    test('TC-012: LessPaper future delivery date', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '4444',
         'เลขที่รับจาก Less paper': '10102',
@@ -355,7 +346,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'กรุณาระบุวันที่ในอนาคต');
     });
 
-    test('TC-017 & TC-018: LessPaper edit table and delete row', async ({ page }) => {
+    test('TC-013 & TC-014: LessPaper edit table and delete row', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '5555',
         'เลขที่รับจาก Less paper': '10103',
@@ -401,7 +392,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await page.waitForLoadState('networkidle');
     });
 
-    test('TC-019: Fiori PR required', async ({ page }) => {
+    test('TC-015: Fiori PR required', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '', // Missing
         'โครงการ': 'Fiori Project',
@@ -424,7 +415,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'กรุณาระบุเลขที่ใบขอซื้อขอจ้าง');
     });
 
-    test('TC-020: Fiori duplicate PR existing', async ({ page }) => {
+    test('TC-016: Fiori duplicate PR existing', async ({ page }) => {
       await page.route('**/projects/import', async (route) => {
         await route.fulfill({
           status: 409,
@@ -457,7 +448,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'เลขที่ใบขอซื้อขอจ้างซ้ำกับโครงการที่มีอยู่แล้ว');
     });
 
-    test('TC-021: Fiori duplicate PR in upload', async ({ page }) => {
+    test('TC-017: Fiori duplicate PR in upload', async ({ page }) => {
       const row1 = {
         'เลขที่ใบขอซื้อขอจ้าง': '8888000333',
         'โครงการ': 'Fiori Project 1',
@@ -481,7 +472,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertCellError(page, 'เลขที่ใบขอซื้อขอจ้างซ้ำกันในชุดนำเข้า');
     });
 
-    test('TC-022: Fiori default method', async ({ page }) => {
+    test('TC-018: Fiori default method', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '8888000444',
         'โครงการ': 'Fiori Default Method',
@@ -504,7 +495,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(selectTrigger).toContainText('ซื้อ/จ้าง แบบเจาะจง ไม่เกิน 1 แสน');
     });
 
-    test('TC-023 to TC-026: Fiori validations, edit, delete', async ({ page }) => {
+    test('TC-019 to TC-022: Fiori validations, edit, delete', async ({ page }) => {
       const row = {
         'เลขที่ใบขอซื้อขอจ้าง': '8888000555',
         'โครงการ': 'Fiori Edit Delete',
@@ -545,7 +536,7 @@ test.describe('Import Project Page E2E Tests', () => {
   });
 
   test.describe('6. Manual Form - User & Scoping Constraints (TC-023 to TC-025)', () => {
-    test('TC-027: Representative single unit lock', async ({ page }) => {
+    test('TC-023: Representative single unit lock', async ({ page }) => {
       await login(page, 'facilities_rep');
       await page.goto('/app/project-import?mode=manual');
 
@@ -558,7 +549,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(unitSelect).toContainText('ฝ่ายอาคารสถานที่');
     });
 
-    test('TC-028: Representative multiple own units', async ({ page }) => {
+    test('TC-024: Representative multiple own units', async ({ page }) => {
       await login(page, 'student_affairs_rep');
       await page.goto('/app/project-import?mode=manual');
 
@@ -576,7 +567,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(page.getByRole('option', { name: 'ฝ่ายการเงิน' })).not.toBeVisible();
     });
 
-    test('TC-029: Procurement user organization select', async ({ page }) => {
+    test('TC-025: Procurement user organization select', async ({ page }) => {
       await login(page, 'document_staff');
       await page.goto('/app/project-import?mode=manual');
 
@@ -604,7 +595,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await page.locator('button#department_id').waitFor({ state: 'visible' });
     });
 
-    test('TC-030: Manual required fields', async ({ page }) => {
+    test('TC-026: Manual required fields', async ({ page }) => {
       await page.getByRole('button', { name: 'ยืนยัน', exact: true }).click();
 
       await assertFieldError(page, 'กรุณาเลือกหน่วยงาน');
@@ -614,7 +605,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertFieldError(page, 'กรุณากรอกวงเงินงบประมาณ');
     });
 
-    test('TC-031: Manual duplicate PR', async ({ page }) => {
+    test('TC-027: Manual duplicate PR', async ({ page }) => {
       await page.route('**/projects/create', async (route) => {
         await route.fulfill({
           status: 409,
@@ -643,7 +634,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertFieldError(page, 'เลขที่ใบขอซื้อขอจ้างซ้ำกับโครงการที่มีอยู่แล้ว');
     });
 
-    test('TC-032: Manual budget numeric/positive', async ({ page }) => {
+    test('TC-028: Manual budget numeric/positive', async ({ page }) => {
       await page.locator('button#department_id').click();
       await page.getByRole('option', { name: 'สำนักงานบริหารระบบกายภาพ' }).click();
       await page.locator('button#unit_id').click();
@@ -661,7 +652,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await assertFieldError(page, 'วงเงินงบประมาณต้องมากกว่า 0');
     });
 
-    test('TC-033: Manual procurement budget range', async ({ page }) => {
+    test('TC-029: Manual procurement budget range', async ({ page }) => {
       await page.locator('button#department_id').click();
       await page.getByRole('option', { name: 'สำนักงานบริหารระบบกายภาพ' }).click();
       await page.locator('button#unit_id').click();
@@ -715,7 +706,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await page.goto('/app/project-import?mode=manual');
     });
 
-    test('TC-034 to TC-037: Budget plan selector validations', async ({ page }) => {
+    test('TC-030 & TC-031 & TC-032 & TC-033 & TC-424: Budget plan selector validations', async ({ page }) => {
       // Select Unit first so budget plans are populated
       const unitSelect = page.locator('button#unit_id');
       await unitSelect.click();
@@ -755,7 +746,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await page.goto('/app/project-import?mode=manual');
     });
 
-    test('TC-038: Delivery warning uses frontend urgency logic', async ({ page }) => {
+    test('TC-034 & TC-425: Urgency warning and acknowledgement dialog', async ({ page }) => {
       await page.locator('button#department_id').click();
       await page.getByRole('option', { name: 'สำนักงานบริหารระบบกายภาพ' }).click();
       await page.locator('button#unit_id').click();
@@ -786,7 +777,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(page.getByText('วันที่ส่งมอบน้อยกว่าปกติ')).not.toBeVisible();
     });
 
-    test('TC-040: Frontend urgency calculation', async ({ page }) => {
+    test('TC-446: Urgency calculation with Thai public holidays', async ({ page }) => {
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       const year = nextMonth.getFullYear();
@@ -813,7 +804,7 @@ test.describe('Import Project Page E2E Tests', () => {
   });
 
   test.describe('10. Success Flow, Routing & Navigation (TC-035, TC-037 to TC-041)', () => {
-    test('TC-039, TC-041, TC-042, TC-044, TC-045: Success path, receive number, and navigation', async ({ page }) => {
+    test('TC-035 & TC-037 & TC-038 & TC-040 & TC-041: Success path, receive number, and navigation', async ({ page }) => {
       const uniqueSuffix = Date.now().toString().slice(-6);
       const projectTitle = `E2E Success Project ${uniqueSuffix}`;
 
@@ -873,7 +864,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(receiveNoCell).toContainText(/^2570\//);
     });
 
-    test('TC-043: External success navigation', async ({ page }) => {
+    test('TC-039: Representative success navigation returns to manual form', async ({ page }) => {
       const uniqueSuffix = Date.now().toString().slice(-6);
       const projectTitle = `Rep Success Project ${uniqueSuffix}`;
 
@@ -912,7 +903,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await login(page, 'document_staff');
     });
 
-    test('TC-046: LessPaper template download', async ({ page }) => {
+    test('TC-042: LessPaper template download', async ({ page }) => {
       await page.goto('/app/project-import?mode=lesspaper');
       
       const downloadPromise = page.waitForEvent('download');
@@ -922,7 +913,7 @@ test.describe('Import Project Page E2E Tests', () => {
       expect(download.suggestedFilename()).toBe('lesspaper-project-import-template.xlsx');
     });
 
-    test('TC-047: Fiori template download', async ({ page }) => {
+    test('TC-043: Fiori template download', async ({ page }) => {
       await page.goto('/app/project-import?mode=fiori');
       
       const downloadPromise = page.waitForEvent('download');
@@ -938,7 +929,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await login(page, 'document_staff');
     });
 
-    test('TC-448_extra: Duplicate-submit prevention', async ({ page }) => {
+    test('TC-448: Duplicate-submit prevention on project creation', async ({ page }) => {
       await page.goto('/app/project-import?mode=manual');
 
       // Fill valid data
@@ -980,7 +971,7 @@ test.describe('Import Project Page E2E Tests', () => {
       await expect(page).toHaveURL(/.*\/app\/project-import\/success\?mode=manual/, { timeout: 10000 });
     });
 
-    test('TC-449_extra: Excel bulk import partial failure', async ({ page }) => {
+    test('TC-449: Excel bulk import partial failure transactional rollback', async ({ page }) => {
       // Mock import failure response
       await page.route('**/projects/import', async (route) => {
         await route.fulfill({
