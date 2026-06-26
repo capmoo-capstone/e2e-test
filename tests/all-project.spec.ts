@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 // Helper to login as a specific role
 async function login(page, role = 'super_admin') {
+  await page.context().clearCookies();
+  await page.goto('/login');
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
   await page.goto('/login');
   await page.getByRole('combobox').click();
   await page.getByRole('option').filter({ hasText: new RegExp(`\\(${role}\\)$`) }).click();
@@ -14,7 +17,6 @@ test.describe('All Projects Page (TC-053 to TC-095)', () => {
     // Default to admin for most basic views
     await login(page, 'super_admin');
     await page.goto('/app/projects');
-    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Table Rendering & Basic Access', () => {
@@ -106,9 +108,8 @@ test.describe('All Projects Page (TC-053 to TC-095)', () => {
       // Test Data: Search term matches an existing "เลขที่ลงรับ"
       // Steps: 1. Navigate to All Projects Page 2. Enter the receive number in the quick search box
       // Expected: The table filters and returns only projects matching the exact receive number
-      await page.locator('input[placeholder="ค้นหาชื่อโครงการ..."]').fill('12345');
+      await page.getByRole('textbox', { name: 'ค้นหา', exact: true }).fill('12345');
       await page.keyboard.press('Enter');
-      await page.waitForLoadState('networkidle');
     });
 
     test('TC-062: Quick search by title', async ({ page }) => {
@@ -233,10 +234,10 @@ test.describe('All Projects Page (TC-053 to TC-095)', () => {
       // Test Data: -
       // Steps: 1. Navigate to All Projects Page 2. Apply any combination of filters 3. Click the "ล้างค่าตัวกรอง" button
       // Expected: The table view will return to the default state where you can see projects within latest 6 months prior and receive number is sorted from latest always
-      await page.getByRole('button', { name: 'สถานะโครงการ' }).click();
-      await page.getByRole('option', { name: 'รอการตอบรับ' }).click();
+      await page.getByRole('button', { name: 'ค้นหาสถานะ' }).click();
+      await page.getByRole('button', { name: 'รอการตอบรับ', exact: true }).click();
       await page.keyboard.press('Escape');
-      await page.getByRole('button', { name: 'ล้างตัวกรอง' }).click();
+      await page.getByRole('button', { name: 'ล้างค่าตัวกรอง' }).click();
     });
 
   });
