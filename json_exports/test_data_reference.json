@@ -1,29 +1,161 @@
 {
   "users": [
-    { "role": "Super Admin", "username": "super_admin", "password": "super_admin" },
-    { "role": "Admin", "username": "admin", "password": "admin" },
-    { "role": "Supply Head", "username": "supply_head", "password": "supply_head" },
-    { "role": "Procurement Head1", "username": "proc_head1", "password": "proc_head1" },
-    { "role": "Procurement Head2", "username": "proc_head2", "password": "proc_head2" },
-    { "role": "Contract Head", "username": "contract_head", "password": "contract_head" },
-    { "role": "Procurement1", "username": "procurement1", "password": "procurement1" },
-    { "role": "Procurement2", "username": "procurement2", "password": "procurement2" },
-    { "role": "Contract", "username": "contract", "password": "contract" },
-    { "role": "Finance Staff", "username": "finance_staff", "password": "finance_staff" },
-    { "role": "Document Staff", "username": "document_staff", "password": "document_staff" },
-    { "role": "Facilities Rep", "username": "facilities_rep", "password": "facilities_rep" },
-    { "role": "Maintenance Rep", "username": "maintenance_rep", "password": "maintenance_rep" },
-    { "role": "Registration Staff", "username": "registration_staff", "password": "registration_staff" },
-    { "role": "Student Affairs Rep", "username": "student_affairs_rep", "password": "student_affairs_rep" },
-    { "role": "Delegated Staff", "username": "delegated_staff", "password": "delegated_staff" },
-    { "role": "Guest", "username": "guest", "password": "guest" }
+    {
+      "role": "Super Admin",
+      "username": "super_admin",
+      "password": "super_admin"
+    },
+    {
+      "role": "Admin",
+      "username": "admin",
+      "password": "admin"
+    },
+    {
+      "role": "Supply Head",
+      "username": "supply_head",
+      "password": "supply_head"
+    },
+    {
+      "role": "Procurement Head1",
+      "username": "proc_head1",
+      "password": "proc_head1"
+    },
+    {
+      "role": "Procurement Head2",
+      "username": "proc_head2",
+      "password": "proc_head2"
+    },
+    {
+      "role": "Contract Head",
+      "username": "contract_head",
+      "password": "contract_head"
+    },
+    {
+      "role": "Procurement1",
+      "username": "procurement1",
+      "password": "procurement1"
+    },
+    {
+      "role": "Procurement2",
+      "username": "procurement2",
+      "password": "procurement2"
+    },
+    {
+      "role": "Contract",
+      "username": "contract",
+      "password": "contract"
+    },
+    {
+      "role": "Finance Staff",
+      "username": "finance_staff",
+      "password": "finance_staff"
+    },
+    {
+      "role": "Document Staff",
+      "username": "document_staff",
+      "password": "document_staff"
+    },
+    {
+      "role": "Facilities Rep",
+      "username": "facilities_rep",
+      "password": "facilities_rep"
+    },
+    {
+      "role": "Maintenance Rep",
+      "username": "maintenance_rep",
+      "password": "maintenance_rep"
+    },
+    {
+      "role": "Registration Staff",
+      "username": "registration_staff",
+      "password": "registration_staff"
+    },
+    {
+      "role": "Student Affairs Rep",
+      "username": "student_affairs_rep",
+      "password": "student_affairs_rep"
+    },
+    {
+      "role": "Delegated Staff",
+      "username": "delegated_staff",
+      "password": "delegated_staff"
+    },
+    {
+      "role": "Guest",
+      "username": "guest",
+      "password": "guest"
+    }
   ],
   "mock_projects": [
-    { "description": "WAITING_PROPOSAL", "pr_no": "2568-PR-UT-4" },
-    { "description": "EBIDDING Complete", "pr_no": "2568-PR-UT-5" },
-    { "description": "CONTRACT Active", "pr_no": "2568-PR-UT-6", "po_no": "2568-PO-UT-6", "less_no": "2568-LESS-UT-6" },
-    { "description": "CONTRACT Ready Export", "pr_no": "2568-PR-UT-7", "po_no": "2568-PO-UT-7", "less_no": "2568-LESS-UT-7", "contract_no": "2568-CON-UT-7" },
-    { "description": "CLOSED", "pr_no": "2568-PR-UT-8", "po_no": "2568-PO-UT-8", "contract_no": "2568-CON-UT-8", "migo103_no": "2568-MIGO-UT-8", "migo105_no": "2568-MIGO-UT-8" },
-    { "description": "REQUEST_EDIT", "pr_no": "2568-PR-UT-11", "po_no": "2568-PO-UT-11" }
+    {
+      "description": "WAITING_PROPOSAL",
+      "pr_no": "2568-PR-UT-4"
+    },
+    {
+      "description": "EBIDDING Complete",
+      "pr_no": "2568-PR-UT-5"
+    },
+    {
+      "description": "CONTRACT Active",
+      "pr_no": "2568-PR-UT-6",
+      "po_no": "2568-PO-UT-6",
+      "less_no": "2568-LESS-UT-6"
+    },
+    {
+      "description": "CONTRACT Ready Export",
+      "pr_no": "2568-PR-UT-7",
+      "po_no": "2568-PO-UT-7",
+      "less_no": "2568-LESS-UT-7",
+      "contract_no": "2568-CON-UT-7"
+    },
+    {
+      "description": "CLOSED",
+      "pr_no": "2568-PR-UT-8",
+      "po_no": "2568-PO-UT-8",
+      "contract_no": "2568-CON-UT-8",
+      "migo103_no": "2568-MIGO-UT-8",
+      "migo105_no": "2568-MIGO-UT-8"
+    },
+    {
+      "description": "REQUEST_EDIT",
+      "pr_no": "2568-PR-UT-11",
+      "po_no": "2568-PO-UT-11"
+    },
+    {
+      "title": "User Testing - Network monitoring sensors",
+      "status": "IN_PROGRESS",
+      "workflow": "LT500K"
+    },
+    {
+      "title": "User Testing - Accounting software renewal",
+      "status": "IN_PROGRESS",
+      "workflow": "MT500K",
+      "pr_no": "2568-PR-UT-4"
+    },
+    {
+      "title": "User Testing - Data center UPS upgrade",
+      "status": "IN_PROGRESS",
+      "workflow": "EBIDDING",
+      "pr_no": "2568-PR-UT-5"
+    },
+    {
+      "title": "User Testing - Security service contract",
+      "status": "IN_PROGRESS",
+      "workflow": "CONTRACT",
+      "less_no": "2568-LESS-UT-6"
+    },
+    {
+      "title": "User Testing - Air purifier order",
+      "status": "WAITING_CANCEL",
+      "workflow": "LT100K"
+    },
+    {
+      "title": "User Testing - Completed tablet procurement",
+      "status": "CLOSED"
+    },
+    {
+      "title": "User Testing - Cancelled printer repair",
+      "status": "CANCELLED"
+    }
   ]
 }
